@@ -18,14 +18,14 @@ class Roulette {
  public:
   Roulette(std::size_t sz=0);
 
-  Weight getWeight(std::size_t elt) const;
-  void setWeight(std::size_t elt, Weight w);
+  Weight get_weight(std::size_t elt) const;
+  void set_weight(std::size_t elt, Weight w);
   std::size_t select(Weight roll) const;
 
-  Weight totalWeight() const;
+  Weight total_weight() const;
   void resize(std::size_t sz);
 
-  void checkConsistency() const;
+  void check_consistency() const;
 
  private:
   std::vector<Weight> weights_;
@@ -39,12 +39,12 @@ inline Roulette<Weight>::Roulette(std::size_t sz)
 }
 
 template <class Weight>
-inline Weight Roulette<Weight>::getWeight(std::size_t elt) const {
+inline Weight Roulette<Weight>::get_weight(std::size_t elt) const {
   return weights_[elt + offset_];
 }
 
 template <class Weight>
-inline void Roulette<Weight>::setWeight(std::size_t elt, Weight w) {
+inline void Roulette<Weight>::set_weight(std::size_t elt, Weight w) {
   std::size_t ind = offset_ + elt;
   weights_[ind] = w;
   while (ind > 0) {
@@ -68,7 +68,7 @@ inline std::size_t Roulette<Weight>::select(Weight roll) const {
 }
 
 template <class Weight>
-inline Weight Roulette<Weight>::totalWeight() const {
+inline Weight Roulette<Weight>::total_weight() const {
   return weights_.front();
 }
 
@@ -96,7 +96,7 @@ inline void Roulette<Weight>::resize(std::size_t sz) {
 }
 
 template <class Weight>
-inline void Roulette<Weight>::checkConsistency() const {
+inline void Roulette<Weight>::check_consistency() const {
   assert (weights_.size() == 2 * offset_ + 1);
   for (Weight w : weights_) {
     assert (w >= 0);
