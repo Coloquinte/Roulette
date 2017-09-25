@@ -22,6 +22,9 @@ class Roulette {
   void set_weight(std::size_t elt, Weight w);
   std::size_t select(Weight roll) const;
 
+  template <typename RNG>
+  std::size_t select(RNG &rng) const;
+
   Weight total_weight() const;
   void resize(std::size_t sz);
 
@@ -57,14 +60,22 @@ template <class Weight>
 inline std::size_t Roulette<Weight>::select(Weight roll) const {
   std::size_t ind = 0;
   while (ind < offset_) {
-    Weight leftTreeWeight = weights_[2*ind+1];
+    Weight left_tree_weight = weights_[2*ind+1];
     ind = 2 * ind + 1;
-    if (roll >= leftTreeWeight) {
+    if (roll >= left_tree_weight) {
       ++ind;
-      roll -= leftTreeWeight;
+      roll -= left_tree_weight;
     }
   }
   return ind - offset_;
+}
+
+template <class Weight>
+template <typename RNG>
+inline std::size_t Roulette<Weight>::select(RNG &rng) const {
+  std::uniform_int_distribution<Weight> dist(0, total_weight() - 1);
+  Weight roll = dist(rng);
+  return select(roll);
 }
 
 template <class Weight>
@@ -74,25 +85,25 @@ inline Weight Roulette<Weight>::total_weight() const {
 
 template <class Weight>
 inline void Roulette<Weight>::resize(std::size_t sz) {
-  std::size_t nextPowerOfTwo = 1;
-  while (nextPowerOfTwo < sz) {
-    nextPowerOfTwo *= 2;
+  std::size_t next_power_of_two = 1;
+  while (next_power_of_two < sz) {
+    next_power_of_two *= 2;
   }
-  std::vector<Weight> newWeights(2 * nextPowerOfTwo - 1, 0);
-  std::size_t newOffset = nextPowerOfTwo - 1;
+  std::vector<Weight> new_weights(2 * next_power_of_two - 1, 0);
+  std::size_t new_offset = next_power_of_two - 1;
 
   std::size_t copiedSize = std::min(weights_.size() - offset_, sz);
   for (std::size_t i = 0; i < copiedSize; ++i) {
-    newWeights[i + newOffset] = weights_[i + offset_];
+    new_weights[i + new_offset] = weights_[i + offset_];
   }
 
-  for (std::size_t i = newOffset; i > 0; --i) {
+  for (std::size_t i = new_offset; i > 0; --i) {
     std::size_t j = i-1;
-    newWeights[j] = newWeights[2*j+1] + newWeights[2*j+2];
+    new_weights[j] = new_weights[2*j+1] + new_weights[2*j+2];
   }
 
-  std::swap(weights_, newWeights);
-  offset_ = newOffset;
+  std::swap(weights_, new_weights);
+  offset_ = new_offset;
 }
 
 template <class Weight>

@@ -42,5 +42,26 @@ BOOST_AUTO_TEST_CASE(resize_and_set) {
   r.check_consistency();
 }
 
+BOOST_AUTO_TEST_CASE(roll) {
+  Roulette<int> r(5);
+
+  r.set_weight(0, 4);
+  r.set_weight(1, 5);
+  r.set_weight(2, 3);
+  r.set_weight(3, 0);
+  r.set_weight(4, 8);
+
+  r.check_consistency();
+
+  BOOST_CHECK_EQUAL (r.select( 0), 0lu);
+  BOOST_CHECK_EQUAL (r.select( 3), 0lu);
+  BOOST_CHECK_EQUAL (r.select( 4), 1lu);
+  BOOST_CHECK_EQUAL (r.select( 8), 1lu);
+  BOOST_CHECK_EQUAL (r.select( 9), 2lu);
+  BOOST_CHECK_EQUAL (r.select(11), 2lu);
+  BOOST_CHECK_EQUAL (r.select(12), 4lu);
+  BOOST_CHECK_EQUAL (r.select(19), 4lu);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
