@@ -15,7 +15,7 @@
 
 template <class Weight>
 class Roulette {
-  static_assert(std::is_integral<Weight>::value, "This class requires an integer parameter type");
+  static_assert(std::is_arithmetic<Weight>::value, "This class requires a numeric parameter type");
 
  public:
   Roulette(std::size_t sz=0);
@@ -31,6 +31,12 @@ class Roulette {
   void resize(std::size_t sz);
 
   void check_consistency() const;
+
+ private:
+  template <typename RNG>
+  std::size_t select(RNG &rng, std::false_type) const;
+  template <typename RNG>
+  std::size_t select(RNG &rng, std::true_type) const;
 
  private:
   std::vector<Weight> weights_;
@@ -72,10 +78,25 @@ inline std::size_t Roulette<Weight>::select(Weight roll) const {
   return ind - offset_;
 }
 
-template <class Weight>
+template<class Weight>
 template <typename RNG>
 inline std::size_t Roulette<Weight>::select(RNG &rng) const {
+  // Select based on the type using flag overloads
+  return select(rng, std::is_floating_point<Weight>());
+}
+
+template<class Weight>
+template <typename RNG>
+inline std::size_t Roulette<Weight>::select(RNG &rng, std::false_type) const {
   std::uniform_int_distribution<Weight> dist(0, total_weight() - 1);
+  Weight roll = dist(rng);
+  return select(roll);
+}
+
+template<class Weight>
+template <typename RNG>
+inline std::size_t Roulette<Weight>::select(RNG &rng, std::true_type) const {
+  std::uniform_real_distribution<Weight> dist(0, total_weight());
   Weight roll = dist(rng);
   return select(roll);
 }
