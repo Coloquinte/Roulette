@@ -7,14 +7,16 @@
  *
  * Given an array of weights, select() picks an index at random with probability proportional to its weight, in O(log n) time
  * Modifying a weight is O(log n) time
- * Resizing the array is O(1) amortized time
  */
 
 #include <random>
 #include <cassert>
+#include <type_traits>
 
 template <class Weight>
 class Roulette {
+  static_assert(std::is_integral<Weight>::value, "This class requires an integer parameter type");
+
  public:
   Roulette(std::size_t sz=0);
 
