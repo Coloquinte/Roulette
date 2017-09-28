@@ -4,9 +4,10 @@ Random weighted selection, dynamic: select an element with probability proportio
 
 It is an important step in many randomized algorithms. This datastructure provides efficient update and query (O(log n)).
 
-It is inspired by a [pointer-based implementation](https://github.com/hyPiRion/roulette-tree). Compared to it, it will have much lower memory usage (~3x), and should have better performance (not benchmarked).
+It is inspired by a [pointer-based implementation](https://github.com/hyPiRion/roulette-tree).
+Compared to it, it will have much lower memory usage (~3x), and may have better performance (not benchmarked).
 
-It is still a work in progress, and will still be improved over time. Currently it only supports integer weights.
+It is still a work in progress, and will still be improved over time.
 
 ## Implementation
 
