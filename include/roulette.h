@@ -25,7 +25,10 @@ class Roulette {
   std::size_t select(Weight roll) const;
 
   template <typename RNG>
-  std::size_t select(RNG &rng) const;
+  std::size_t operator()(RNG &rng) const;
+
+  std::size_t min() const { return 0; }
+  std::size_t max() const { return size_ - 1; }
 
   Weight total_weight() const;
   void resize(std::size_t sz);
@@ -41,6 +44,7 @@ class Roulette {
  private:
   std::vector<Weight> weights_;
   std::size_t offset_;
+  std::size_t size_;
 };
 
 template <class Weight>
@@ -66,6 +70,9 @@ inline void Roulette<Weight>::set_weight(std::size_t elt, Weight w) {
 
 template <class Weight>
 inline std::size_t Roulette<Weight>::select(Weight roll) const {
+  if (size_ == 0) {
+    throw std::runtime_error("Empty discrete distribution");
+  }
   std::size_t ind = 0;
   while (ind < offset_) {
     Weight left_tree_weight = weights_[2*ind+1];
@@ -80,7 +87,7 @@ inline std::size_t Roulette<Weight>::select(Weight roll) const {
 
 template<class Weight>
 template <typename RNG>
-inline std::size_t Roulette<Weight>::select(RNG &rng) const {
+inline std::size_t Roulette<Weight>::operator()(RNG &rng) const {
   // Select based on the type using flag overloads
   return select(rng, std::is_floating_point<Weight>());
 }
@@ -98,7 +105,8 @@ template <typename RNG>
 inline std::size_t Roulette<Weight>::select(RNG &rng, std::true_type) const {
   std::uniform_real_distribution<Weight> dist(0, total_weight());
   Weight roll = dist(rng);
-  return select(roll);
+  // Handle corner cases with floating point
+  return std::min(select(roll), max());
 }
 
 template <class Weight>
@@ -127,13 +135,18 @@ inline void Roulette<Weight>::resize(std::size_t sz) {
 
   std::swap(weights_, new_weights);
   offset_ = new_offset;
+  size_ = sz;
 }
 
 template <class Weight>
 inline void Roulette<Weight>::check_consistency() const {
   assert (weights_.size() == 2 * offset_ + 1);
-  for (Weight w : weights_) {
-    assert (w >= 0);
+  assert (size_ <= offset_ + 1);
+  for (std::size_t i = 0; i < offset_ + size_; ++i) {
+    assert (weights_[i] >= 0);
+  }
+  for (std::size_t i = offset_ + size_; i < 2 * offset_ + 1; ++i) {
+    assert (weights_[i] == 0);
   }
   for (std::size_t i = 0; i < offset_; ++i) {
     assert (weights_[i] == weights_[2*i+1] + weights_[2*i+2]);
